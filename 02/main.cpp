@@ -9,7 +9,7 @@
 #include <vector>
 
 namespace {
-  constexpr std::size_t n_workers{4};
+  constexpr std::size_t n_workers{2};
 } // end anonymous namespace
 
 struct stats_t
