@@ -68,6 +68,8 @@ main()
     t.join();
   }
 
+  // These can be relaxed loads because the previous joins synchronize
+  // the threads.
   std::cout << stats.safe.load(std::memory_order_relaxed) << ' '
             << stats.safe_dampened.load(std::memory_order_relaxed) << '\n';
 
