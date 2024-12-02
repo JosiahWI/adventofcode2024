@@ -1,12 +1,27 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <atomic>
 #include <iterator>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
-std::vector<int> parse_levels(std::string const& report);
+namespace {
+  constexpr std::size_t n_workers{4};
+} // end anonymous namespace
+
+struct stats_t
+{
+  std::atomic<int> safe{};
+  std::atomic<int> safe_dampened{};
+};
+
+static void worker(std::vector<std::string>::const_iterator start,
+                   std::vector<std::string>::const_iterator end, stats_t& stats);
+static void solve(std::string const& report, stats_t& stats);
+static std::vector<int> parse_levels(std::string const& report);
 static bool is_safe(std::vector<int> const& levels);
 static bool is_safe_asc(std::vector<int> const& levels);
 static bool is_safe_pair_asc(int a, int b);
@@ -24,25 +39,59 @@ all_adj(ForwardIt start, ForwardIt end, BinaryPred pred)
 int
 main()
 {
-  int safe{0};
-  int safe_dampened{0};
+  stats_t stats{0, 0};
+  std::vector<std::string> reports;
   while (!std::cin.eof()) {
-    std::string report;
-    std::getline(std::cin, report);
-    if (!std::cin.eof()) {
-      std::vector<int> levels{parse_levels(report)};
-      if (is_safe(levels)) {
-        ++safe;
-      }
-      if (is_safe_dampened(levels)) {
-        ++safe_dampened;
-      }
-    }
+    std::getline(std::cin, reports.emplace_back());
   }
 
-  std::cout << safe << ' ' << safe_dampened << '\n';
+  // There is an empty report at the end of the vector from when we read
+  // EOF, and it would count as safe, so we need to remove it.
+  if (!reports.empty()) {
+    reports.erase(reports.end() - 1);
+  }
+
+  std::vector<std::thread> workers;
+  std::size_t i{0};
+  std::size_t max_workload_size{reports.size() / n_workers};
+  for (; (i + max_workload_size) < reports.size(); i += max_workload_size) {
+    workers.emplace_back(std::thread{worker, reports.begin() + i,
+                         reports.begin() + i + max_workload_size,
+                         std::ref(stats)});
+  }
+  if (i < reports.size()) {
+    workers.emplace_back(std::thread{worker, reports.begin() + i, reports.end(),
+                         std::ref(stats)});
+  }
+
+  for (std::thread& t : workers) {
+    t.join();
+  }
+
+  std::cout << stats.safe.load(std::memory_order_relaxed) << ' '
+            << stats.safe_dampened.load(std::memory_order_relaxed) << '\n';
 
   return 0;
+}
+
+void
+worker(std::vector<std::string>::const_iterator start,
+       std::vector<std::string>::const_iterator end, stats_t& stats)
+{
+  using namespace std::placeholders;
+  std::for_each(start, end, std::bind(solve, _1, std::ref(stats)));
+}
+
+void
+solve(std::string const& report, stats_t& stats)
+{
+  std::vector<int> levels{parse_levels(report)};
+  if (is_safe(levels)) {
+    stats.safe.fetch_add(1, std::memory_order_relaxed);
+  }
+  if (is_safe_dampened(levels)) {
+    stats.safe_dampened.fetch_add(1, std::memory_order_relaxed);
+  }
 }
 
 std::vector<int>
