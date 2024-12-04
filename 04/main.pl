@@ -84,9 +84,8 @@ extract_string(Grid,Coord,Offs,Result):-
 
 plus_coord([A,B],[C,D],[E,F]):- E is A + C, F is B + D.
 
-% Lol.
-multiindex(_,[ColIdx,_],Result):- ColIdx < 0, char_code('.',Code), char_code(Result,Code).
-multiindex(_,[_,RowIdx],Result):- RowIdx < 0, char_code('.',Code), char_code(Result,Code).
+multiindex(_,[ColIdx,_],Result):- ColIdx < 0, Result == '.'.
+multiindex(_,[_,RowIdx],Result):- RowIdx < 0, Result == '.'.
 multiindex(Grid,[_,RowIdx],Result):-
   height(Grid,Height),
   RowIdx >= Height,
