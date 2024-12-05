@@ -17,7 +17,6 @@ int
 main()
 {
   std::vector<std::pair<int,int>> edges;
-
   std::string line;
   while (!std::getline(std::cin, line).eof() && !line.empty()) {
     edges.emplace_back(read_edge(line));
@@ -37,7 +36,6 @@ main()
       is.ignore(1, ',');
     }
 
-
     // This represents one valid ordering of all the pages.
     std::vector<int>        valid_order;
     std::unordered_set<int> page_subset{update.begin(), update.end()};
@@ -51,7 +49,6 @@ main()
   }
 
   std::cout << result_valid << ' ' << result_invalid_fixed << '\n';
-
   return 0;
 }
 
