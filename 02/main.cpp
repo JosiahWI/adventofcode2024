@@ -87,13 +87,17 @@ worker(std::vector<std::string>::const_iterator start,
 void
 solve(std::string const& report, stats_t& stats)
 {
+  int local_safe{0};
+  int local_safe_dampened{0};
   std::vector<int> levels{parse_levels(report)};
   if (is_safe(levels)) {
-    stats.safe.fetch_add(1, std::memory_order_relaxed);
+    ++local_safe;
   }
   if (is_safe_dampened(levels)) {
-    stats.safe_dampened.fetch_add(1, std::memory_order_relaxed);
+    ++local_safe_dampened;
   }
+    stats.safe.fetch_add(local_safe, std::memory_order_relaxed);
+    stats.safe_dampened.fetch_add(local_safe_dampened, std::memory_order_relaxed);
 }
 
 std::vector<int>
