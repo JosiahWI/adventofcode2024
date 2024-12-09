@@ -96,8 +96,8 @@ solve(std::string const& report, stats_t& stats)
   if (is_safe_dampened(levels)) {
     ++local_safe_dampened;
   }
-    stats.safe.fetch_add(local_safe, std::memory_order_relaxed);
-    stats.safe_dampened.fetch_add(local_safe_dampened, std::memory_order_relaxed);
+  stats.safe.fetch_add(local_safe, std::memory_order_relaxed);
+  stats.safe_dampened.fetch_add(local_safe_dampened, std::memory_order_relaxed);
 }
 
 std::vector<int>
