@@ -30,7 +30,6 @@ public:
   void
   step(long times)
   {
-    // We update the iterator manually to keep it valid before erasure.
     std::unordered_map<long, long> new_stones;
     for (auto& it : this->stones) {
       auto [stone,count]{it};
