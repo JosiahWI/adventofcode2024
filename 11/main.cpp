@@ -7,7 +7,7 @@
 #include <utility>
 
 namespace {
-  constexpr long step_size{5};
+  constexpr long step_size{3};
 } // end anonymous namespace
 
 static std::deque<long> simulate(long stone, long steps);
